@@ -3,7 +3,7 @@ package VS::RuleEngine;
 use strict;
 use warnings;
 
-our $VERSION = "0.08";
+our $VERSION = "0.09";
 
 1;
 __END__
@@ -149,7 +149,7 @@ Claes Jakobsson C<< <claesjac@cpan.org> >>
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright (c) 2007 - 2008, Versed Solutions C<< <info@versed.se> >>. All rights reserved.
+Copyright (c) 2007, Versed Solutions C<< <info@versed.se> >>. All rights reserved.
 
 This software is released under the MIT license cited below.
 

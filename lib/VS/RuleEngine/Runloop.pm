@@ -97,35 +97,39 @@ sub _mk_runloop {
 		my $local = VS::RuleEngine::Data->new();
 		
 		$inputs->set_local($local);
+
+		my $skip = 0;
 		
 		# Process all pre hooks
 		for my $hook (@pre_hooks) {
 			my $result = $hook->invoke($inputs, $global, $local);
+			$skip = 1 if $result == KV_SKIP;
 			return KV_ABORT if $result == KV_ABORT;
 		}
 		
 		# Run rules until we find a matching rule
-		my $match;
-		my $skip = 0;
+		if (!$skip) {
+		    my $match;
 		
-		PROCESS_RULES: for (@rules) {
-		    my $rule = $rules{$_};
-			my $result = $rule->evaluate($inputs, $global, $local);
-			$skip = 1, last PROCESS_RULES if $result == KV_SKIP;
-			$match = $_, last PROCESS_RULES if $result == KV_MATCH;
-		}
+		    PROCESS_RULES: for (@rules) {
+		        my $rule = $rules{$_};
+			    my $result = $rule->evaluate($inputs, $global, $local);
+			    $skip = 1, last PROCESS_RULES if $result == KV_SKIP;
+			    $match = $_, last PROCESS_RULES if $result == KV_MATCH;
+		    }
         
-        # Run all actions
-        if (!$skip && $match) {
-            $local->set('VS::RuleEngine/matchingRule' => $match);
-            my $actions = $action_map{$match};
-            for (@$actions) {
-                my $action = $actions{$_};
-                $action->perform($inputs, $global, $local);
+            # Run all actions
+            if (!$skip && $match) {
+                $local->set('VS::RuleEngine/matchingRule' => $match);
+                my $actions = $action_map{$match};
+                for (@$actions) {
+                    my $action = $actions{$_};
+                    $action->perform($inputs, $global, $local);
+                }
             }
         }
         
-        # All outputs are always called
+        # All outputs are always called if somethings decides not to skip
         if (!$skip) {
 		    PROCESS_OUTPUT: for my $output (@outputs) {
 			    $output->process($inputs, $global, $local);
